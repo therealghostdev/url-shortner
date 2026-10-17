@@ -75,6 +75,7 @@ app.post("/", validateUrl, async (req, res) => {
 
   res.status(200).json({
     message: "item already exists",
+    code: found.code,
   });
 });
 

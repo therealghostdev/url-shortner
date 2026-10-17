@@ -47,7 +47,7 @@ Express.js API
   |    PostgreSQL
   |       |
   |       v
-  |    Generate/store short code
+  |    Generate/store short code (Should be kept safe)
   |
   +---- GET /:code
           |
@@ -97,8 +97,9 @@ Create a `.env` file in the project root.
 For running the application and its dependencies through Docker Compose, the configuration should follow this pattern:
 
 ```env
-PORT=3000
+DATABASE_NAME=<DB_NAME>
 DATABASE_URL=postgresql://<DB_USER>:<DB_PASSWORD>@db:5432/<DB_NAME>
+DATABASE_PASSWORD=<DB_PASSWORD>
 REDIS_URL=redis://redis:6379
 ```
 
@@ -321,70 +322,3 @@ url-shortner/
 - `docker-compose.yml` — Local application and infrastructure services.
 - `Dockerfile` — Instructions for building the application image.
 - `.env` — Local environment variables.
-
-The `.env` file should remain local and should not be committed to version control.
-
-## Deployment
-
-The application can be deployed to a platform that supports Node.js applications or Docker containers.
-
-The deployment platform must provide a reachable PostgreSQL database and Redis instance, either as managed services or separately hosted infrastructure.
-
-### Deploying to Railway
-
-Railway is one option for deploying the API and its dependencies.
-
-#### 1. Push the project to Git
-
-Ensure the project is committed to a Git repository hosted on GitHub or another supported Git provider.
-
-Before pushing, verify that:
-
-- `.env` is excluded from Git.
-- The application starts correctly.
-- Required dependencies are listed in `package.json`.
-- The application listens on the configured `PORT`.
-- Database access and Redis caching work locally.
-
-#### 2. Create a Railway project
-
-Visit [Railway](https://railway.com/) and create a project.
-
-Connect your Git repository and configure a service for the URL shortener. Railway should build and deploy the application using the repository's configuration or Dockerfile.
-
-#### 3. Provision PostgreSQL and Redis
-
-Add PostgreSQL and a Redis-compatible service to the Railway project, or connect the application to externally hosted instances.
-
-Each service must be reachable from the deployed application.
-
-Do not assume the local Compose hostnames `db` and `redis` will work in production. Use the actual connection URLs or private service hostnames supplied by the deployment environment.
-
-#### 4. Configure production environment variables
-
-Set the required variables in the Railway service's environment configuration:
-
-```env
-DATABASE_URL=<PRODUCTION_POSTGRES_CONNECTION_URL>
-DATABASE_NAME=<DATABASE_NAME>
-DATABASE_PASSWORD=<DATABASE_PASSWORD>
-REDIS_URL=<PRODUCTION_REDIS_CONNECTION_URL>
-```
-
-Use the real connection URLs provided by your services. Do not copy local database credentials into production.
-
-Keep secrets out of your source code and public repository.
-
-#### 5. Prepare the database
-
-Apply the project's committed Prisma migrations against the production database.
-
-For a production deployment, use:
-
-```bash
-npx prisma migrate deploy
-```
-
-Ensure the deployment process runs this command in an environment with the production `DATABASE_URL` available. It must not run against your local development database by accident.
-
-The project should also generate Prisma Client during the build or deployment process.
